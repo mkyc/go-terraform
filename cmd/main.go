@@ -4,7 +4,8 @@ import terra "github.com/mkyc/go-terraform"
 
 func main() {
 	opts, err := terra.WithDefaultRetryableErrors(&terra.Options{
-		TerraformDir: "./tests",
+		TerraformDir:  "./tests",
+		StateFilePath: "./subdir/other-state.tfstate",
 	})
 	if err != nil {
 		panic(err)

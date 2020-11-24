@@ -2,3 +2,4 @@
 /tests/.terraform/
 /tests/terraform.tfstate
 /tests/terraform.tfstate.backup
+/tests/subdir/
