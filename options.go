@@ -67,6 +67,7 @@ type Options struct {
 	OutputMaxLineSize        int                    // The max size of one line in stdout and stderr (in bytes)
 	Parallelism              int                    // Set the parallelism setting for Terraform
 	PlanFilePath             string                 // The path to output a plan file to (for the plan command) or read one from (for the apply command)
+	StateFilePath            string                 // The path to state file
 	//TODO consider adding logger back
 	//TODO consider adding ssh agent back
 }

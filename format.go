@@ -29,6 +29,16 @@ var TerraformCommandsWithPlanFileSupport = []string{
 	"graph",
 }
 
+var terraformCommandWithStateFileSupport = []string{
+	"plan",
+	"apply",
+	"destroy",
+	"refresh",
+	"taint",
+	"untaint",
+	"import",
+}
+
 // FormatArgs converts the inputs to a format palatable to terraform. This includes converting the given vars to the
 // format the Terraform CLI expects (-var key=value).
 func FormatArgs(options *Options, args ...string) []string {
@@ -36,11 +46,17 @@ func FormatArgs(options *Options, args ...string) []string {
 	commandType := args[0]
 	lockSupported := listContains(TerraformCommandsWithLockSupport, commandType)
 	planFileSupported := listContains(TerraformCommandsWithPlanFileSupport, commandType)
+	stateFileSupported := listContains(terraformCommandWithStateFileSupport, commandType)
 
 	terraformArgs = append(terraformArgs, args...)
 	terraformArgs = append(terraformArgs, FormatTerraformVarsAsArgs(options.Vars)...)
 	terraformArgs = append(terraformArgs, FormatTerraformArgs("-var-file", options.VarFiles)...)
 	terraformArgs = append(terraformArgs, FormatTerraformArgs("-target", options.Targets)...)
+
+	if stateFileSupported {
+		// If command supports path to state file
+		terraformArgs = append(terraformArgs, FormatTerraformArgs("-state", []string{options.StateFilePath})...)
+	}
 
 	if lockSupported {
 		// If command supports locking, handle lock arguments
