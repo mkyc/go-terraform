@@ -126,6 +126,18 @@ func main() {
 	println(s)
 
 	println("================")
+	println("=== show =======")
+	println("================")
+	println("= destruction ==")
+	println("================")
+
+	s, err = terra.Show(opts)
+	if err != nil {
+		panic(err)
+	}
+	println(s)
+
+	println("================")
 	println("= destroy via ==")
 	println("=== plan of ====")
 	println("= destruction===")
