@@ -9,6 +9,7 @@ func main() {
 	opts, err := terra.WithDefaultRetryableErrors(&terra.Options{
 		TerraformDir:  "./tests",
 		StateFilePath: "./subdir/other-state.tfstate",
+		PlanFilePath:  "./subdir/other-plan.tfplan",
 	})
 	if err != nil {
 		panic(err)
@@ -33,6 +34,18 @@ func main() {
 	println("===============")
 
 	s, err = terra.Plan(opts)
+	if err != nil {
+		panic(err)
+	}
+	println(s)
+
+	println("===============")
+	println("===============")
+	println("=== show ======")
+	println("===============")
+	println("===============")
+
+	s, err = terra.Show(opts)
 	if err != nil {
 		panic(err)
 	}
