@@ -1,5 +1,4 @@
-resource null_resource date {
-  provisioner local-exec {
-    command = "date"
-  }
+resource local_file foo {
+  content     = "foo!"
+  filename = "${path.module}/foo.bar"
 }

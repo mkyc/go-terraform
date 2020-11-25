@@ -1,6 +1,9 @@
 package main
 
-import terra "github.com/mkyc/go-terraform"
+import (
+	"fmt"
+	terra "github.com/mkyc/go-terraform"
+)
 
 func main() {
 	opts, err := terra.WithDefaultRetryableErrors(&terra.Options{
@@ -46,6 +49,21 @@ func main() {
 		panic(err)
 	}
 	println(s)
+
+	println("===============")
+	println("===============")
+	println("=== output ====")
+	println("===============")
+	println("===============")
+
+	m, err := terra.OutputAll(opts)
+	if err != nil {
+		panic(err)
+	}
+	println(len(m))
+	for k, v := range m {
+		fmt.Printf("%s : %v\n", k, v)
+	}
 
 	println("===============")
 	println("===============")

@@ -1,92 +1,41 @@
 package terra
 
-import (
-	"strings"
-	"sync"
-)
+import "encoding/json"
 
-// output contains the output after runnig a command.
-type output struct {
-	stdout *outputStream
-	stderr *outputStream
-	// merged contains stdout  and stderr merged into one stream.
-	merged *merged
+// OutputAll calls terraform output returns all values as a map.
+// If there is error fetching the output, fails the test
+func OutputAll(options *Options) (map[string]interface{}, error) {
+	return OutputForKeysE(options, nil)
 }
 
-func newOutput() *output {
-	m := new(merged)
-	return &output{
-		merged: m,
-		stdout: &outputStream{
-			merged: m,
-		},
-		stderr: &outputStream{
-			merged: m,
-		},
-	}
-}
-
-func (o *output) Stdout() string {
-	if o == nil {
-		return ""
+// OutputForKeysE calls terraform output for the given key list and returns values as a map.
+// The returned values are of type interface{} and need to be type casted as necessary. Refer to output_test.go
+func OutputForKeysE(options *Options, keys []string) (map[string]interface{}, error) {
+	out, err := RunTerraformCommandAndGetStdoutE(options, FormatArgs(options, "output", "-no-color", "-json")...)
+	if err != nil {
+		return nil, err
 	}
 
-	return o.stdout.String()
-}
-
-func (o *output) Stderr() string {
-	if o == nil {
-		return ""
+	outputMap := map[string]map[string]interface{}{}
+	if err := json.Unmarshal([]byte(out), &outputMap); err != nil {
+		return nil, err
 	}
 
-	return o.stderr.String()
-}
-
-func (o *output) Combined() string {
-	if o == nil {
-		return ""
+	if keys == nil {
+		outputKeys := make([]string, 0, len(outputMap))
+		for k := range outputMap {
+			outputKeys = append(outputKeys, k)
+		}
+		keys = outputKeys
 	}
 
-	return o.merged.String()
-}
-
-type outputStream struct {
-	Lines []string
-	*merged
-}
-
-func (st *outputStream) WriteString(s string) (n int, err error) {
-	st.Lines = append(st.Lines, string(s))
-	return st.merged.WriteString(s)
-}
-
-func (st *outputStream) String() string {
-	if st == nil {
-		return ""
+	resultMap := make(map[string]interface{})
+	for _, key := range keys {
+		value, containsValue := outputMap[key]["value"]
+		if !containsValue {
+			return nil, OutputKeyNotFound(key)
+		}
+		resultMap[key] = value
 	}
-
-	return strings.Join(st.Lines, "\n")
-}
-
-type merged struct {
-	// ensure that there are no parallel writes
-	sync.Mutex
-	Lines []string
-}
-
-func (m *merged) String() string {
-	if m == nil {
-		return ""
-	}
-
-	return strings.Join(m.Lines, "\n")
-}
-
-func (m *merged) WriteString(s string) (n int, err error) {
-	m.Lock()
-	defer m.Unlock()
-
-	m.Lines = append(m.Lines, string(s))
-
-	return len(s), nil
+	return resultMap, nil
 }

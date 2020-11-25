@@ -37,6 +37,7 @@ var terraformCommandWithStateFileSupport = []string{
 	"taint",
 	"untaint",
 	"import",
+	"output",
 }
 
 // FormatArgs converts the inputs to a format palatable to terraform. This includes converting the given vars to the

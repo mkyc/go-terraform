@@ -34,6 +34,18 @@ func RunTerraformCommandE(additionalOptions *Options, additionalArgs ...string) 
 	})
 }
 
+// RunTerraformCommandAndGetStdoutE runs terraform with the given arguments and options and returns solely its stdout
+// (but not stderr).
+func RunTerraformCommandAndGetStdoutE(additionalOptions *Options, additionalArgs ...string) (string, error) {
+	options, args := GetCommonOptions(additionalOptions, additionalArgs...)
+
+	cmd := generateCommand(options, args...)
+	description := fmt.Sprintf("%s %v", options.TerraformBinary, args)
+	return DoWithRetryableErrorsE(description, options.RetryableTerraformErrors, options.MaxRetries, options.TimeBetweenRetries, func() (string, error) {
+		return RunCommandAndGetStdOutE(cmd)
+	})
+}
+
 func generateCommand(options *Options, args ...string) Command {
 	cmd := Command{
 		Command:    options.TerraformBinary,
@@ -59,13 +71,19 @@ func RunCommandAndGetOutputE(command Command) (string, error) {
 	return output.Combined(), nil
 }
 
-type ErrWithCmdOutput struct {
-	Underlying error
-	Output     *output
-}
+// RunCommandAndGetStdOutE runs a shell command and returns solely its stdout (but not stderr) as a string. The stdout
+// and stderr of that command will also be printed to the stdout and stderr of this Go program to make debugging easier.
+// Any returned error will be of type ErrWithCmdOutput, containing the output streams and the underlying error.
+func RunCommandAndGetStdOutE(command Command) (string, error) {
+	output, err := runCommand(command)
+	if err != nil {
+		if output != nil {
+			return output.Stdout(), &ErrWithCmdOutput{err, output}
+		}
+		return "", &ErrWithCmdOutput{err, output}
+	}
 
-func (e *ErrWithCmdOutput) Error() string {
-	return fmt.Sprintf("error while running command: %v; %s", e.Underlying, e.Output.Stderr())
+	return output.Stdout(), nil
 }
 
 // runCommand runs a shell command and stores each line from stdout and stderr in Output. Depending on the logger, the
@@ -239,23 +257,4 @@ func DoWithRetryInterfaceE(actionDescription string, maxRetries int, sleepBetwee
 	}
 
 	return output, MaxRetriesExceeded{Description: actionDescription, MaxRetries: maxRetries}
-}
-
-// MaxRetriesExceeded is an error that occurs when the maximum amount of retries is exceeded.
-type MaxRetriesExceeded struct {
-	Description string
-	MaxRetries  int
-}
-
-func (err MaxRetriesExceeded) Error() string {
-	return fmt.Sprintf("'%s' unsuccessful after %d retries", err.Description, err.MaxRetries)
-}
-
-// FatalError is a marker interface for errors that should not be retried.
-type FatalError struct {
-	Underlying error
-}
-
-func (err FatalError) Error() string {
-	return fmt.Sprintf("FatalError{Underlying: %v}", err.Underlying)
 }
