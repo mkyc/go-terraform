@@ -68,7 +68,7 @@ type Options struct {
 	Parallelism              int                    // Set the parallelism setting for Terraform
 	PlanFilePath             string                 // The path to output a plan file to (for the plan command) or read one from (for the apply command)
 	StateFilePath            string                 // The path to state file
-	//TODO consider adding logger back
+	Logger                   Logger
 	//TODO consider adding ssh agent back
 }
 
@@ -98,6 +98,10 @@ func GetCommonOptions(options *Options, args ...string) (*Options, []string) {
 		args = append(args, fmt.Sprintf("--parallelism=%d", options.Parallelism))
 	}
 
+	if options.Logger == nil {
+		options.Logger = &DefaultLogger{}
+	}
+
 	return options, args
 }
 
@@ -106,6 +110,7 @@ func GetCommonOptions(options *Options, args ...string) (*Options, []string) {
 // testing, and are known to self resolve upon retrying.
 // This will fail the test if there are any errors in the cloning process.
 func WithDefaultRetryableErrors(originalOptions *Options) (*Options, error) {
+	//TODO why cloning ... ?
 	newOptions, err := originalOptions.Clone()
 	if err != nil {
 		return nil, err
@@ -122,6 +127,10 @@ func WithDefaultRetryableErrors(originalOptions *Options) (*Options, error) {
 	// modules.
 	newOptions.MaxRetries = 3
 	newOptions.TimeBetweenRetries = 5 * time.Second
+
+	if newOptions.Logger == nil {
+		newOptions.Logger = &DefaultLogger{}
+	}
 
 	return newOptions, nil
 }
