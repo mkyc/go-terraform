@@ -5,6 +5,44 @@ import (
 	terra "github.com/mkyc/go-terraform"
 )
 
+type SimpleLogger struct{}
+
+func (s SimpleLogger) Trace(format string, v ...interface{}) {
+	justPrint(format, v...)
+}
+
+func (s SimpleLogger) Debug(format string, v ...interface{}) {
+	justPrint(format, v...)
+}
+
+func (s SimpleLogger) Info(format string, v ...interface{}) {
+	justPrint(format, v...)
+}
+
+func (s SimpleLogger) Warn(format string, v ...interface{}) {
+	justPrint(format, v...)
+}
+
+func (s SimpleLogger) Error(format string, v ...interface{}) {
+	justPrint(format, v...)
+}
+
+func (s SimpleLogger) Fatal(format string, v ...interface{}) {
+	justPrint(format, v...)
+}
+
+func (s SimpleLogger) Panic(format string, v ...interface{}) {
+	justPrint(format, v...)
+}
+
+func justPrint(s string, v ...interface{}) {
+	if len(v) > 0 {
+		fmt.Printf(s, v...)
+	} else {
+		fmt.Println(s)
+	}
+}
+
 func main() {
 	opts, err := terra.WithDefaultRetryableErrors(&terra.Options{
 		TerraformDir:  "./tests",
@@ -108,6 +146,7 @@ func main() {
 		TerraformDir:  "./tests",
 		StateFilePath: "./subdir/other-state.tfstate",
 		PlanFilePath:  "./subdir/other-destroy-plan.tfplan",
+		Logger:        SimpleLogger{},
 	})
 	if err != nil {
 		panic(err)
