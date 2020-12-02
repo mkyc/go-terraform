@@ -76,6 +76,11 @@ func main() {
 		panic(err)
 	}
 	println(s)
+	c, err := terra.Count(s)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("[Plan] Add: %d, Change: %d, Destroy: %d\n", c.Add, c.Change, c.Destroy)
 
 	println("================")
 	println("================")
@@ -100,6 +105,11 @@ func main() {
 		panic(err)
 	}
 	println(s)
+	c, err = terra.Count(s)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("[Apply] Added: %d, Changed: %d, Destroyed: %d\n", c.Add, c.Change, c.Destroy)
 
 	println("================")
 	println("================")
@@ -126,6 +136,11 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	c, err = terra.Count(s)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("[Destroy] Added: %d, Changed: %d, Destroyed: %d\n", c.Add, c.Change, c.Destroy)
 
 	println("================")
 	println("=== plan =======")
@@ -163,6 +178,11 @@ func main() {
 		panic(err)
 	}
 	println(s)
+	c, err = terra.Count(s)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("[Plan Destroy] Add: %d, Change: %d, Destroy: %d\n", c.Add, c.Change, c.Destroy)
 
 	println("================")
 	println("=== show =======")
@@ -187,4 +207,9 @@ func main() {
 		panic(err)
 	}
 	println(s)
+	c, err = terra.Count(s)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("[Apply Destruction] Added: %d, Changed: %d, Destroyed: %d\n", c.Add, c.Change, c.Destroy)
 }
